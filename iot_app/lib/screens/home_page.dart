@@ -1,7 +1,7 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:iot_app/screens/home_screen.dart';
-import 'package:iot_app/screens/search_screen.dart';
-import 'package:iot_app/screens/add_screen.dart';
+import 'package:iot_app/screens/devices_screen.dart';
+import 'package:iot_app/screens/calendar_screen.dart';
 import 'package:iot_app/screens/favorite_screen.dart';
 import 'package:iot_app/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
@@ -18,17 +18,17 @@ class _HomePageState extends State<HomePage> {
 
   final screens = const [
     HomeScreen(),
-    SearchScreen(),
-    AddScreen(),
+    DevicesScreen(),
+    CalendarScreen(),
     FavoriteScreen(),
     ProfileScreen(),
   ];
 
   final items = const [
     Icon(Icons.home, size: 30),
-    Icon(Icons.search, size: 30),
-    Icon(Icons.add, size: 30),
-    Icon(Icons.favorite, size: 30),
+    Icon(Icons.air, size: 30),
+    Icon(Icons.calendar_month, size: 30),
+    Icon(Icons.question_mark, size: 30),
     Icon(Icons.person, size: 30),
   ];
 
@@ -41,19 +41,17 @@ class _HomePageState extends State<HomePage> {
         top: false,
 
         child: Scaffold(
-          backgroundColor: const Color.fromARGB(255, 242, 242, 242),
+          backgroundColor: Colors.white,
 
-          body: screens[index],
+          body: IndexedStack(index: index, children: screens),
 
           bottomNavigationBar: Theme(
-            data: Theme.of(context).copyWith(
-              iconTheme: const IconThemeData(
-                color: Color.fromARGB(255, 242, 242, 242),
-              ),
-            ),
+            data: Theme.of(
+              context,
+            ).copyWith(iconTheme: const IconThemeData(color: Colors.white)),
 
             child: CurvedNavigationBar(
-              backgroundColor: Colors.transparent,
+              backgroundColor: Colors.white,
               color: const Color(0xFF952F57),
               buttonBackgroundColor: const Color(0xFFC7A438),
 
