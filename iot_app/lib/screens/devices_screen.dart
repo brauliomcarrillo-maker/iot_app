@@ -1,24 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:buttons_tabbar/buttons_tabbar.dart';
 import 'package:iot_app/widgets/custom_header.dart';
-import '../services/home_assistant_service.dart';
-import '../models/ha_entity.dart';
+import 'package:iot_app/subscreens/subdevices/h_building_devices.dart';
+import 'package:iot_app/subscreens/subdevices/g_building_devices.dart';
 
-class DevicesScreen extends StatefulWidget {
+class DevicesScreen extends StatelessWidget {
   const DevicesScreen({super.key});
-
-  @override
-  State<DevicesScreen> createState() => _DevicesScreenState();
-}
-
-class _DevicesScreenState extends State<DevicesScreen> {
-  final HomeAssistantService _haService = HomeAssistantService();
-  late Future<List<HAEntity>> _devicesFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _devicesFuture = _haService.getRelevantDevices();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,98 +13,67 @@ class _DevicesScreenState extends State<DevicesScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            //Encabezado
             const CustomHeader(title: 'Dispositivos'),
 
             Expanded(
-              child: FutureBuilder<List<HAEntity>>(
-                future: _devicesFuture,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          'Error: ${snapshot.error}',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.red),
+              child: DefaultTabController(
+                length: 2,
+                initialIndex: 0,
+                child: Column(
+                  children: <Widget>[
+                    const SizedBox(height: 10),
+
+                    //Botones
+                    Padding(
+                      padding: const EdgeInsets.only(left: 15.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ButtonsTabBar(
+                          width: 105,
+                          backgroundColor: const Color.fromARGB(255, 138, 53, 87),
+                          unselectedBackgroundColor: const Color.fromARGB(
+                            255,
+                            196,
+                            174,
+                            109,
+                          ),
+                          labelStyle: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          unselectedLabelStyle: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          tabs: const [
+                            Tab(
+                              icon: Icon(Icons.business),
+                              text: "Edificio H",
+                            ),
+                            Tab(
+                              icon: Icon(Icons.domain),
+                              text: "Edificio G",
+                            ),
+                          ],
                         ),
                       ),
-                    );
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No se encontraron dispositivos.'));
-                  }
-
-                  final devices = snapshot.data!;
-                  
-                  return ListWheelScrollView.useDelegate(
-                    itemExtent: 150,
-                    useMagnifier: true,
-                    magnification: 1.2,
-                    physics: const FixedExtentScrollPhysics(),
-                    diameterRatio: 2,
-                    childDelegate: ListWheelChildBuilderDelegate(
-                      childCount: devices.length,
-                      builder: (context, index) {
-                        final device = devices[index];
-                        final colors = [Colors.red, Colors.green, Colors.blue, Colors.orange, Colors.purple, Colors.teal];
-                        final color = colors[index % colors.length];
-                        
-                        return _buildItem(
-                          device.friendlyName, 
-                          device.state,
-                          device.entityId,
-                          color,
-                        );
-                      },
                     ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  static Widget _buildItem(String title, String state, String entityId, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Container(
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 5,
-              offset: Offset(0, 3),
+                    // Pestañas
+                    const Expanded(
+                      child: TabBarView(
+                        children: <Widget>[
+                          HBuildingDevices(),
+                          GBuildingDevices(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Estado: $state',
-                style: const TextStyle(fontSize: 16, color: Colors.white70),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                entityId,
-                style: const TextStyle(fontSize: 12, color: Colors.white54),
-              ),
-            ],
-          ),
         ),
       ),
     );

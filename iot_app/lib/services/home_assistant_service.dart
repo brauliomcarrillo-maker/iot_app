@@ -26,15 +26,26 @@ class HomeAssistantService {
     }
   }
 
-  Future<List<HAEntity>> getRelevantDevices() async {
+  Future<List<HAEntity>> getRelevantDevices({String? buildingFilter}) async {
     final entities = await getEntities();
     
     // Filtrar dominios comunes para dispositivos Tuya / Controladores de AC
     return entities.where((e) {
-      return e.entityId.startsWith('climate.') || 
+      final isRelevant = e.entityId.startsWith('climate.') || 
              e.entityId.startsWith('remote.') || 
              e.entityId.startsWith('switch.') ||
-             e.entityId.startsWith('sensor.') && e.entityId.contains('temperature'); // Por si hay sensores
+             (e.entityId.startsWith('sensor.') && e.entityId.contains('temperature'));
+             
+      if (!isRelevant) return false;
+
+      if (buildingFilter != null) {
+        // Usa un límite de palabra (\b) para evitar coincidencias erróneas (ej. 'h' en 'switch')
+        // Coincidirá con "H1", "Salón H1", "climate.h1", "h2", etc.
+        final regex = RegExp('\\b$buildingFilter', caseSensitive: false);
+        return regex.hasMatch(e.friendlyName) || regex.hasMatch(e.entityId);
+      }
+
+      return true;
     }).toList();
   }
 }
